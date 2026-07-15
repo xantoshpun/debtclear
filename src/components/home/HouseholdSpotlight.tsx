@@ -11,7 +11,7 @@ export function HouseholdSpotlight() {
         <p className="mt-4 text-lg leading-relaxed text-white/70">
           Start solo. Add a partner, or anyone else you share money with, any
           time, with no separate login for them. Every debt, income source,
-          and bill carries an owner, so the combined total and each person's
+          and bill carries an owner, so the combined total and each person&apos;s
           share are both one click away.
         </p>
       </Reveal>
@@ -27,7 +27,7 @@ export function HouseholdSpotlight() {
           <UserPlus size={22} weight="bold" className="text-brand" />
           <p className="text-sm font-semibold text-white">Add a profile</p>
           <p className="text-sm text-white/50">
-            Track a partner, roommate, or anyone else, whenever you're ready.
+            Track a partner, roommate, or anyone else, whenever you&apos;re ready.
           </p>
         </div>
       </Reveal>

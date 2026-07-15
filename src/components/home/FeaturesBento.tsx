@@ -11,7 +11,7 @@ export function FeaturesBento() {
     <section id="features" className="mx-auto max-w-7xl px-6 py-24">
       <Reveal>
         <h2 className="max-w-lg text-3xl font-black tracking-tight text-ink sm:text-4xl dark:text-zinc-50">
-          Everything a payoff plan needs, nothing it doesn't
+          Everything a payoff plan needs, nothing it doesn&apos;t
         </h2>
       </Reveal>
 
