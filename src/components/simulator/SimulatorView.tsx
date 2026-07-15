@@ -1,7 +1,8 @@
 "use client";
 
 import { useMemo, useState } from "react";
-import { Fire, Lightning, ChartLineUp, Target } from "@phosphor-icons/react/dist/ssr";
+import Link from "next/link";
+import { Fire, Lightning, Sliders } from "@phosphor-icons/react/dist/ssr";
 import {
   simulatePayoff,
   formatMonthsAsDuration,
@@ -11,15 +12,23 @@ import {
 } from "@/lib/payoff";
 import { formatMoney } from "@/lib/currency";
 import { useSettings } from "@/components/settings/SettingsContext";
+import { PayoffChart } from "@/components/PayoffChart";
 
-export function PayoffPlanView({ debts }: { debts: PayoffInputDebt[] }) {
+const MAX_EXTRA = 2000;
+const EXTRA_STEP = 25;
+
+export function SimulatorView({ debts }: { debts: PayoffInputDebt[] }) {
   const { defaultStrategy, currency } = useSettings();
   const [strategy, setStrategy] = useState<PayoffStrategy>(defaultStrategy);
   const [extra, setExtra] = useState(0);
+  const [lumpSum, setLumpSum] = useState(0);
   const money = (amount: number) => formatMoney(amount, currency);
 
-  const plan = useMemo(() => simulatePayoff(debts, strategy, extra), [debts, strategy, extra]);
-  const baseline = useMemo(() => simulatePayoff(debts, strategy, 0), [debts, strategy]);
+  const plan = useMemo(
+    () => simulatePayoff(debts, strategy, extra, lumpSum),
+    [debts, strategy, extra, lumpSum],
+  );
+  const baseline = useMemo(() => simulatePayoff(debts, strategy, 0, 0), [debts, strategy]);
 
   const interestSaved =
     plan.months !== null && baseline.months !== null
@@ -34,17 +43,23 @@ export function PayoffPlanView({ debts }: { debts: PayoffInputDebt[] }) {
     return (
       <div>
         <h1 className="text-3xl font-black tracking-tight text-ink dark:text-zinc-50">
-          Payoff Plan
+          Simulator
         </h1>
         <p className="mt-1 text-body dark:text-zinc-400">
-          Your step-by-step strategy to become debt-free
+          See what extra money could do to your debt-free date
         </p>
         <div className="mt-8 flex flex-col items-center justify-center rounded-3xl bg-canvas py-16 text-center dark:bg-zinc-900">
-          <ChartLineUp size={32} className="text-mute dark:text-zinc-600" />
+          <Sliders size={32} className="text-mute dark:text-zinc-600" />
           <p className="mt-3 font-semibold text-ink dark:text-zinc-50">No debts yet</p>
           <p className="mt-1 text-sm text-body dark:text-zinc-400">
-            Add a debt to see your payoff plan.
+            Add a debt to start simulating what-if scenarios.
           </p>
+          <Link
+            href="/debts"
+            className="mt-5 rounded-3xl bg-brand px-5 py-2.5 text-sm font-semibold text-ink"
+          >
+            Add a Debt
+          </Link>
         </div>
       </div>
     );
@@ -53,15 +68,15 @@ export function PayoffPlanView({ debts }: { debts: PayoffInputDebt[] }) {
   return (
     <div>
       <h1 className="text-3xl font-black tracking-tight text-ink dark:text-zinc-50">
-        Payoff Plan
+        Simulator
       </h1>
       <p className="mt-1 text-body dark:text-zinc-400">
-        Your step-by-step strategy to become debt-free
+        Drag the slider or add a lump sum and see the effect, instantly
       </p>
 
       <div className="mt-8 rounded-3xl bg-canvas p-6 dark:bg-zinc-900">
         <h2 className="text-sm font-semibold text-mute dark:text-zinc-400">
-          Choose Your Strategy
+          Strategy
         </h2>
         <div className="mt-3 grid grid-cols-1 gap-3 sm:grid-cols-2">
           <button
@@ -100,21 +115,49 @@ export function PayoffPlanView({ debts }: { debts: PayoffInputDebt[] }) {
           </button>
         </div>
 
-        <div className="mt-5 flex flex-col gap-2">
-          <label htmlFor="extra" className="text-sm font-semibold text-ink dark:text-zinc-50">
-            Extra Monthly Payment ({currency})
-          </label>
+        <div className="mt-6 flex flex-col gap-2">
+          <div className="flex items-center justify-between">
+            <label htmlFor="extra" className="text-sm font-semibold text-ink dark:text-zinc-50">
+              Extra Monthly Payment
+            </label>
+            <span className="text-lg font-black text-accent-cyan-deep dark:text-sky-400">
+              {money(extra)}/mo
+            </span>
+          </div>
           <input
             id="extra"
-            type="number"
-            min="0"
-            step="1"
+            type="range"
+            min={0}
+            max={MAX_EXTRA}
+            step={EXTRA_STEP}
             value={extra}
-            onChange={(e) => setExtra(Math.max(0, Number(e.target.value) || 0))}
+            onChange={(e) => setExtra(Number(e.target.value))}
+            className="w-full accent-brand"
+          />
+        </div>
+
+        <div className="mt-6 flex flex-col gap-2">
+          <label htmlFor="lump" className="text-sm font-semibold text-ink dark:text-zinc-50">
+            One-Time Lump Sum ({currency})
+          </label>
+          <input
+            id="lump"
+            type="number"
+            min={0}
+            step={50}
+            value={lumpSum || ""}
+            onChange={(e) => setLumpSum(Math.max(0, Number(e.target.value) || 0))}
+            placeholder="e.g. tax refund, bonus"
             className="w-full max-w-xs rounded-xl border border-ink/15 bg-canvas px-4 py-2.5 text-base text-ink outline-none focus:border-ink/40 dark:border-white/20 dark:bg-zinc-900 dark:text-zinc-50 dark:focus:border-white/40"
           />
         </div>
       </div>
+
+      <PayoffChart
+        planSeries={plan.balanceSeries}
+        baselineSeries={baseline.balanceSeries}
+        currency={currency}
+      />
 
       <div className="mt-6 grid grid-cols-2 gap-4 lg:grid-cols-4">
         <div className="rounded-3xl bg-canvas p-5 dark:bg-zinc-900">
@@ -123,9 +166,7 @@ export function PayoffPlanView({ debts }: { debts: PayoffInputDebt[] }) {
             {plan.months !== null ? formatMonthsAsDuration(plan.months) : "50+ years"}
           </p>
           {plan.months !== null && (
-            <p className="text-xs text-mute dark:text-zinc-400">
-              {addMonthsLabel(plan.months)}
-            </p>
+            <p className="text-xs text-mute dark:text-zinc-400">{addMonthsLabel(plan.months)}</p>
           )}
         </div>
         <div className="rounded-3xl bg-canvas p-5 dark:bg-zinc-900">
@@ -147,62 +188,6 @@ export function PayoffPlanView({ debts }: { debts: PayoffInputDebt[] }) {
             {timeSavedMonths !== null ? formatMonthsAsDuration(timeSavedMonths) : "—"}
           </p>
           <p className="text-xs text-mute dark:text-zinc-400">vs. minimums only</p>
-        </div>
-      </div>
-
-      <div className="mt-8 rounded-3xl bg-canvas p-6 dark:bg-zinc-900">
-        <h2 className="text-lg font-bold text-ink dark:text-zinc-50">
-          Your Payoff Action Plan
-        </h2>
-        <p className="mt-1 text-sm text-body dark:text-zinc-400">
-          Focus all extra money on the highest-priority debt first. Pay minimums on
-          everything else.
-        </p>
-
-        <div className="mt-5 flex flex-col gap-3">
-          {plan.order.map((debt, i) => (
-            <div
-              key={debt.id}
-              className={`rounded-2xl border p-4 ${
-                i === 0
-                  ? "border-brand bg-brand-pale dark:bg-zinc-800"
-                  : "border-ink/10 dark:border-white/10"
-              }`}
-            >
-              <div className="flex items-start justify-between gap-3">
-                <div className="flex items-center gap-3">
-                  <span className="grid size-7 shrink-0 place-items-center rounded-full bg-ink text-xs font-bold text-white dark:bg-zinc-50 dark:text-ink">
-                    {i + 1}
-                  </span>
-                  <div>
-                    <p className="font-bold text-ink dark:text-zinc-50">{debt.name}</p>
-                    <p className="text-sm text-mute dark:text-zinc-400">
-                      {money(debt.balance)} at {debt.interestRate}% APR
-                    </p>
-                  </div>
-                </div>
-                {i === 0 && (
-                  <span className="flex items-center gap-1.5 rounded-full bg-brand px-3 py-1 text-xs font-semibold text-ink">
-                    <Target size={12} weight="bold" />
-                    Focus here now
-                  </span>
-                )}
-              </div>
-              <div className="mt-3 flex flex-wrap items-center gap-x-6 gap-y-1 text-sm text-body dark:text-zinc-400">
-                <span>Min. Payment {money(debt.minimumPayment)}/mo</span>
-                <span>
-                  {debt.monthsToPayoff !== null
-                    ? `Paid off in ~${formatMonthsAsDuration(debt.monthsToPayoff)} (${addMonthsLabel(debt.monthsToPayoff)})`
-                    : "Not paid off within 50 years at this rate"}
-                </span>
-                {i === 0 && extra > 0 && (
-                  <span className="font-semibold text-ink dark:text-zinc-50">
-                    Pay {money(debt.minimumPayment + extra)}/mo (min + {money(extra)} extra)
-                  </span>
-                )}
-              </div>
-            </div>
-          ))}
         </div>
       </div>
     </div>

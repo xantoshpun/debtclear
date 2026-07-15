@@ -19,6 +19,8 @@ import { createClient } from "@/lib/supabase/client";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { ExpenseFormModal } from "./ExpenseFormModal";
 import type { Expense, ExpenseCategory, Profile } from "./types";
+import { formatMoney } from "@/lib/currency";
+import { useSettings } from "@/components/settings/SettingsContext";
 
 const CATEGORY_ICONS: Record<ExpenseCategory, typeof House> = {
   Housing: House,
@@ -39,6 +41,7 @@ export function ExpensesView({
   initialExpenses: Expense[];
 }) {
   const supabase = createClient();
+  const { currency } = useSettings();
   const [expenses, setExpenses] = useState(initialExpenses);
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<Expense | undefined>(undefined);
@@ -89,7 +92,7 @@ export function ExpensesView({
             Expenses
           </h1>
           <p className="mt-1 text-body dark:text-zinc-400">
-            ${total.toLocaleString()}/mo total
+            {formatMoney(total, currency)}/mo total
           </p>
         </div>
         <button
@@ -125,11 +128,11 @@ export function ExpensesView({
               <div key={category}>
                 <div className="flex items-center justify-between">
                   <div className="flex items-center gap-2">
-                    <Icon size={18} weight="bold" className="text-ink dark:text-brand" />
+                    <Icon size={18} weight="bold" className="text-accent-cyan-deep dark:text-sky-400" />
                     <h2 className="font-bold text-ink dark:text-zinc-50">{category}</h2>
                   </div>
-                  <span className="text-sm text-mute dark:text-zinc-500">
-                    ${subtotal.toLocaleString()}/mo
+                  <span className="text-sm text-mute dark:text-zinc-400">
+                    {formatMoney(subtotal, currency)}/mo
                   </span>
                 </div>
                 <div className="mt-3 flex flex-col gap-2">
@@ -140,14 +143,14 @@ export function ExpensesView({
                     >
                       <div>
                         <p className="font-semibold text-ink dark:text-zinc-50">{e.name}</p>
-                        <p className="text-sm text-mute dark:text-zinc-500">
+                        <p className="text-sm text-mute dark:text-zinc-400">
                           {ownerLabel(e.profile_id)}
                         </p>
                       </div>
                       <div className="flex items-center gap-3">
                         <p className="font-semibold text-ink dark:text-zinc-50">
-                          ${e.monthly_amount.toLocaleString()}
-                          <span className="text-sm font-medium text-mute dark:text-zinc-500">
+                          {formatMoney(e.monthly_amount, currency)}
+                          <span className="text-sm font-medium text-mute dark:text-zinc-400">
                             /mo
                           </span>
                         </p>
@@ -155,7 +158,7 @@ export function ExpensesView({
                           type="button"
                           onClick={() => openEdit(e)}
                           aria-label="Edit"
-                          className="grid size-8 place-items-center rounded-full text-mute hover:bg-ink/5 hover:text-ink dark:text-zinc-500 dark:hover:bg-white/10 dark:hover:text-zinc-50"
+                          className="grid size-11 place-items-center rounded-full text-mute hover:bg-ink/5 hover:text-ink dark:text-zinc-400 dark:hover:bg-white/10 dark:hover:text-zinc-50"
                         >
                           <PencilSimple size={16} />
                         </button>
@@ -163,7 +166,7 @@ export function ExpensesView({
                           type="button"
                           onClick={() => setPendingDelete(e)}
                           aria-label="Delete"
-                          className="grid size-8 place-items-center rounded-full text-mute hover:bg-negative/10 hover:text-negative dark:text-zinc-500"
+                          className="grid size-11 place-items-center rounded-full text-mute hover:bg-negative/10 hover:text-negative dark:text-zinc-400"
                         >
                           <Trash size={16} />
                         </button>

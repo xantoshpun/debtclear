@@ -6,6 +6,8 @@ import { createClient } from "@/lib/supabase/client";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { IncomeFormModal } from "./IncomeFormModal";
 import type { Income, Profile } from "./types";
+import { formatMoney } from "@/lib/currency";
+import { useSettings } from "@/components/settings/SettingsContext";
 
 export function IncomeView({
   profiles,
@@ -15,6 +17,7 @@ export function IncomeView({
   initialIncome: Income[];
 }) {
   const supabase = createClient();
+  const { currency } = useSettings();
   const [income, setIncome] = useState(initialIncome);
   const [modalOpen, setModalOpen] = useState(false);
   const [editing, setEditing] = useState<Income | undefined>(undefined);
@@ -55,7 +58,7 @@ export function IncomeView({
             Income
           </h1>
           <p className="mt-1 text-body dark:text-zinc-400">
-            ${combined.toLocaleString()}/mo combined
+            {formatMoney(combined, currency)}/mo combined
           </p>
         </div>
         <button
@@ -77,10 +80,10 @@ export function IncomeView({
               .reduce((sum, i) => sum + i.monthly_amount, 0);
             return (
               <div key={p.id} className="rounded-3xl bg-canvas p-5 dark:bg-zinc-900">
-                <p className="text-sm font-semibold text-mute dark:text-zinc-500">{p.name}</p>
+                <p className="text-sm font-semibold text-mute dark:text-zinc-400">{p.name}</p>
                 <p className="mt-1 text-2xl font-black text-ink dark:text-zinc-50">
-                  ${total.toLocaleString()}
-                  <span className="text-base font-semibold text-mute dark:text-zinc-500">/mo</span>
+                  {formatMoney(total, currency)}
+                  <span className="text-base font-semibold text-mute dark:text-zinc-400">/mo</span>
                 </p>
               </div>
             );
@@ -109,15 +112,15 @@ export function IncomeView({
             return (
               <div
                 key={i.id}
-                className="flex items-center justify-between gap-4 rounded-3xl border-l-4 border-brand bg-canvas p-5 dark:bg-zinc-900"
+                className="flex items-center justify-between gap-4 rounded-3xl bg-canvas p-5 shadow-[0_1px_0_rgba(16,20,15,0.06)] dark:bg-zinc-900"
               >
                 <div className="flex items-center gap-4">
-                  <div className="grid size-10 shrink-0 place-items-center rounded-full bg-brand-pale dark:bg-zinc-800">
-                    <Briefcase size={18} weight="bold" className="text-ink dark:text-brand" />
+                  <div className="grid size-10 shrink-0 place-items-center rounded-full bg-positive/10 dark:bg-zinc-800">
+                    <Briefcase size={18} weight="bold" className="text-positive dark:text-emerald-400" />
                   </div>
                   <div>
                     <p className="font-bold text-ink dark:text-zinc-50">{i.source}</p>
-                    <p className="text-sm text-mute dark:text-zinc-500">
+                    <p className="text-sm text-mute dark:text-zinc-400">
                       {i.job_title ? `${i.job_title} · ` : ""}
                       {i.income_type}
                       {owner ? ` · ${owner.name}` : ""}
@@ -126,14 +129,14 @@ export function IncomeView({
                 </div>
                 <div className="flex items-center gap-3">
                   <p className="font-bold text-ink dark:text-zinc-50">
-                    ${i.monthly_amount.toLocaleString()}
-                    <span className="text-sm font-medium text-mute dark:text-zinc-500">/mo</span>
+                    {formatMoney(i.monthly_amount, currency)}
+                    <span className="text-sm font-medium text-mute dark:text-zinc-400">/mo</span>
                   </p>
                   <button
                     type="button"
                     onClick={() => openEdit(i)}
                     aria-label="Edit"
-                    className="grid size-8 place-items-center rounded-full text-mute hover:bg-ink/5 hover:text-ink dark:text-zinc-500 dark:hover:bg-white/10 dark:hover:text-zinc-50"
+                    className="grid size-11 place-items-center rounded-full text-mute hover:bg-ink/5 hover:text-ink dark:text-zinc-400 dark:hover:bg-white/10 dark:hover:text-zinc-50"
                   >
                     <PencilSimple size={16} />
                   </button>
@@ -141,7 +144,7 @@ export function IncomeView({
                     type="button"
                     onClick={() => setPendingDelete(i)}
                     aria-label="Delete"
-                    className="grid size-8 place-items-center rounded-full text-mute hover:bg-negative/10 hover:text-negative dark:text-zinc-500"
+                    className="grid size-11 place-items-center rounded-full text-mute hover:bg-negative/10 hover:text-negative dark:text-zinc-400"
                   >
                     <Trash size={16} />
                   </button>

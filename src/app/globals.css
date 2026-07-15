@@ -8,13 +8,16 @@
   --color-brand-hover: #b9f393;
   --color-brand-pale: #e9f9de;
   --color-ink: #10140f;
+  --color-ink-deep: #163300;
   --color-body: #4a4f49;
-  --color-mute: #868c81;
+  --color-mute: #666b62;
   --color-canvas: #ffffff;
   --color-canvas-soft: #eef2ea;
   --color-positive: #2e9e4b;
+  --color-positive-deep: #1f7a38;
   --color-warning: #b86700;
   --color-negative: #d2413a;
+  --color-accent-cyan-deep: #0d7ea3;
 }
 
 body {

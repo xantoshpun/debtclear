@@ -60,7 +60,7 @@ function SetUpSummary({
 
   return (
     <div>
-      <div className="flex items-center gap-2 text-positive dark:text-emerald-400">
+      <div className="flex items-center gap-2 text-positive-deep dark:text-emerald-400">
         <Check size={20} weight="bold" />
         <span className="text-sm font-semibold">You&apos;re set up</span>
       </div>
@@ -254,7 +254,7 @@ function SetupWizard({
                   type="button"
                   onClick={() => removeOther(i)}
                   aria-label="Remove"
-                  className="grid size-11 shrink-0 place-items-center rounded-xl text-mute hover:bg-ink/5 hover:text-negative dark:text-zinc-500 dark:hover:bg-white/10"
+                  className="grid size-11 shrink-0 place-items-center rounded-xl text-mute hover:bg-ink/5 hover:text-negative dark:text-zinc-400 dark:hover:bg-white/10"
                 >
                   <Trash size={18} />
                 </button>

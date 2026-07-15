@@ -17,7 +17,7 @@ export function FeaturesBento() {
 
       <div className="mt-12 grid grid-cols-1 gap-5 md:grid-cols-4 md:grid-rows-2">
         <Reveal className="md:col-span-2 md:row-span-2 rounded-3xl bg-brand-pale p-8 dark:bg-zinc-900">
-          <ChartLineUp size={28} weight="bold" className="text-ink dark:text-brand" />
+          <ChartLineUp size={28} weight="bold" className="text-ink-deep dark:text-brand" />
           <h3 className="mt-5 text-xl font-bold text-ink dark:text-zinc-50">
             Avalanche or Snowball payoff plan
           </h3>
@@ -29,7 +29,7 @@ export function FeaturesBento() {
         </Reveal>
 
         <Reveal delay={0.06} className="md:col-span-2 rounded-3xl bg-canvas p-8 shadow-[0_1px_0_rgba(16,20,15,0.06)] dark:bg-zinc-900/60">
-          <Sliders size={28} weight="bold" className="text-ink dark:text-brand" />
+          <Sliders size={28} weight="bold" className="text-accent-cyan-deep dark:text-sky-400" />
           <h3 className="mt-5 text-xl font-bold text-ink dark:text-zinc-50">
             What-if simulator
           </h3>
@@ -51,7 +51,7 @@ export function FeaturesBento() {
         </Reveal>
 
         <Reveal delay={0.18} className="rounded-3xl bg-canvas p-8 shadow-[0_1px_0_rgba(16,20,15,0.06)] dark:bg-zinc-900/60">
-          <ChartPieSlice size={28} weight="bold" className="text-ink dark:text-brand" />
+          <ChartPieSlice size={28} weight="bold" className="text-positive dark:text-emerald-400" />
           <h3 className="mt-5 text-lg font-bold text-ink dark:text-zinc-50">
             Reports, exportable
           </h3>

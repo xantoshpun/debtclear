@@ -10,6 +10,9 @@ import {
   Receipt,
   ChartLineUp,
   ChartBar,
+  Sliders,
+  ChartPieSlice,
+  Gear,
   List,
   X,
   SignOut,
@@ -17,12 +20,15 @@ import {
 import { createClient } from "@/lib/supabase/client";
 
 const LINKS = [
-  { href: "/dashboard", label: "Dashboard", icon: SquaresFour },
-  { href: "/debts", label: "Debts", icon: CreditCard },
-  { href: "/income", label: "Income", icon: CurrencyDollar },
-  { href: "/expenses", label: "Expenses", icon: Receipt },
-  { href: "/payoff-plan", label: "Payoff Plan", icon: ChartLineUp },
-  { href: "/payments", label: "Payments", icon: ChartBar },
+  { href: "/dashboard", label: "Dashboard", icon: SquaresFour, tint: "" },
+  { href: "/debts", label: "Debts", icon: CreditCard, tint: "text-warning dark:text-amber-400" },
+  { href: "/income", label: "Income", icon: CurrencyDollar, tint: "text-positive dark:text-emerald-400" },
+  { href: "/expenses", label: "Expenses", icon: Receipt, tint: "text-accent-cyan-deep dark:text-sky-400" },
+  { href: "/payoff-plan", label: "Payoff Plan", icon: ChartLineUp, tint: "text-ink-deep dark:text-brand" },
+  { href: "/simulator", label: "Simulator", icon: Sliders, tint: "text-accent-cyan-deep dark:text-sky-400" },
+  { href: "/payments", label: "Payments", icon: ChartBar, tint: "text-positive-deep dark:text-emerald-400" },
+  { href: "/reports", label: "Reports", icon: ChartPieSlice, tint: "" },
+  { href: "/settings", label: "Settings", icon: Gear, tint: "" },
 ];
 
 function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
@@ -43,7 +49,11 @@ function NavLinks({ onNavigate }: { onNavigate?: () => void }) {
                 : "text-body hover:bg-ink/5 dark:text-zinc-400 dark:hover:bg-white/10"
             }`}
           >
-            <link.icon size={18} weight="bold" />
+            <link.icon
+              size={18}
+              weight="bold"
+              className={link.tint ? `${link.tint} ${active ? "" : "opacity-60"}` : undefined}
+            />
             {link.label}
           </Link>
         );
@@ -93,12 +103,12 @@ export function Sidebar({ subtitle }: { subtitle: string }) {
         </div>
       )}
 
-      <aside className="hidden w-64 shrink-0 flex-col border-r border-ink/5 bg-canvas px-4 py-6 lg:flex dark:border-white/5 dark:bg-zinc-900">
+      <aside className="hidden w-64 shrink-0 flex-col overflow-y-auto border-r border-ink/5 bg-canvas px-4 py-6 lg:sticky lg:top-0 lg:flex lg:h-[100dvh] dark:border-white/5 dark:bg-zinc-900">
         <div className="px-2">
           <span className="text-lg font-black tracking-tight text-ink dark:text-zinc-50">
             DebtClear
           </span>
-          <p className="mt-0.5 text-sm text-mute dark:text-zinc-500">{subtitle}</p>
+          <p className="mt-0.5 text-sm text-mute dark:text-zinc-400">{subtitle}</p>
         </div>
 
         <div className="mt-8 flex-1">

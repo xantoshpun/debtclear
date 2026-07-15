@@ -3,6 +3,8 @@
 import { useState } from "react";
 import { X } from "@phosphor-icons/react/dist/ssr";
 import { createClient } from "@/lib/supabase/client";
+import { Modal } from "@/components/Modal";
+import { useSettings } from "@/components/settings/SettingsContext";
 import { DEBT_TYPES, type Debt, type Profile } from "./types";
 
 const inputClass =
@@ -21,6 +23,7 @@ export function DebtFormModal({
   onSaved: (debt: Debt) => void;
 }) {
   const supabase = createClient();
+  const { currency } = useSettings();
   const isEdit = !!debt;
 
   const [name, setName] = useState(debt?.name ?? "");
@@ -85,189 +88,187 @@ export function DebtFormModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink/40 px-4 py-8 dark:bg-black/60">
-      <div className="max-h-full w-full max-w-lg overflow-y-auto rounded-3xl bg-canvas p-6 dark:bg-zinc-900">
-        <div className="flex items-center justify-between">
-          <h2 className="text-xl font-black tracking-tight text-ink dark:text-zinc-50">
-            {isEdit ? "Edit Debt" : "Add Debt"}
-          </h2>
+    <Modal onClose={onClose}>
+      <div className="flex items-center justify-between">
+        <h2 className="text-xl font-black tracking-tight text-ink dark:text-zinc-50">
+          {isEdit ? "Edit Debt" : "Add Debt"}
+        </h2>
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label="Close"
+          className="grid size-11 place-items-center rounded-full text-mute hover:bg-ink/5 dark:text-zinc-400 dark:hover:bg-white/10"
+        >
+          <X size={18} />
+        </button>
+      </div>
+
+      <form onSubmit={handleSubmit} className="mt-5 flex flex-col gap-4">
+        <div className="flex flex-col gap-2">
+          <label htmlFor="name" className={labelClass}>
+            Debt Name
+          </label>
+          <input
+            id="name"
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="e.g. Chase Visa"
+            className={inputClass}
+          />
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
+          <div className="flex flex-col gap-2">
+            <label htmlFor="type" className={labelClass}>
+              Type
+            </label>
+            <select
+              id="type"
+              value={debtType}
+              onChange={(e) => setDebtType(e.target.value)}
+              className={inputClass}
+            >
+              <option value="" disabled>
+                Select type
+              </option>
+              {DEBT_TYPES.map((t) => (
+                <option key={t} value={t}>
+                  {t}
+                </option>
+              ))}
+            </select>
+          </div>
+
+          <div className="flex flex-col gap-2">
+            <label htmlFor="owner" className={labelClass}>
+              Owner
+            </label>
+            <select
+              id="owner"
+              value={profileId}
+              onChange={(e) => setProfileId(e.target.value)}
+              className={inputClass}
+            >
+              {profiles.map((p) => (
+                <option key={p.id} value={p.id}>
+                  {p.name}
+                </option>
+              ))}
+              {profiles.length > 1 && <option value="">Joint</option>}
+            </select>
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
+          <div className="flex flex-col gap-2">
+            <label htmlFor="original" className={labelClass}>
+              Original Balance ({currency})
+            </label>
+            <input
+              id="original"
+              type="number"
+              step="0.01"
+              min="0"
+              value={originalBalance}
+              onChange={(e) => setOriginalBalance(e.target.value)}
+              className={inputClass}
+            />
+          </div>
+          <div className="flex flex-col gap-2">
+            <label htmlFor="current" className={labelClass}>
+              Current Balance ({currency})
+            </label>
+            <input
+              id="current"
+              type="number"
+              step="0.01"
+              min="0"
+              value={currentBalance}
+              onChange={(e) => setCurrentBalance(e.target.value)}
+              className={inputClass}
+            />
+          </div>
+        </div>
+
+        <div className="grid grid-cols-2 gap-4">
+          <div className="flex flex-col gap-2">
+            <label htmlFor="rate" className={labelClass}>
+              Interest Rate (%)
+            </label>
+            <input
+              id="rate"
+              type="number"
+              step="0.001"
+              min="0"
+              value={interestRate}
+              onChange={(e) => setInterestRate(e.target.value)}
+              className={inputClass}
+            />
+          </div>
+          <div className="flex flex-col gap-2">
+            <label htmlFor="min-payment" className={labelClass}>
+              Minimum Payment ({currency})
+            </label>
+            <input
+              id="min-payment"
+              type="number"
+              step="0.01"
+              min="0"
+              value={minimumPayment}
+              onChange={(e) => setMinimumPayment(e.target.value)}
+              className={inputClass}
+            />
+          </div>
+        </div>
+
+        <div className="flex flex-col gap-2">
+          <label htmlFor="due-day" className={labelClass}>
+            Due Date (Day of Month)
+          </label>
+          <input
+            id="due-day"
+            type="number"
+            min="1"
+            max="31"
+            value={dueDay}
+            onChange={(e) => setDueDay(e.target.value)}
+            className={inputClass}
+          />
+        </div>
+
+        <div className="flex flex-col gap-2">
+          <label htmlFor="notes" className={labelClass}>
+            Notes
+          </label>
+          <textarea
+            id="notes"
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            rows={2}
+            placeholder="Any additional notes..."
+            className={inputClass}
+          />
+        </div>
+
+        {error && <p className="text-sm text-negative">{error}</p>}
+
+        <div className="mt-2 flex gap-3">
           <button
             type="button"
             onClick={onClose}
-            aria-label="Close"
-            className="grid size-9 place-items-center rounded-full text-mute hover:bg-ink/5 dark:text-zinc-500 dark:hover:bg-white/10"
+            className="flex-1 rounded-3xl px-5 py-3 text-sm font-semibold text-body hover:bg-ink/5 dark:text-zinc-400 dark:hover:bg-white/10"
           >
-            <X size={18} />
+            Cancel
+          </button>
+          <button
+            type="submit"
+            disabled={loading}
+            className="flex-1 rounded-3xl bg-brand px-5 py-3 text-sm font-semibold text-ink transition-transform hover:bg-brand-hover active:scale-[0.98] disabled:opacity-60"
+          >
+            {loading ? "Saving..." : isEdit ? "Save Changes" : "Add Debt"}
           </button>
         </div>
-
-        <form onSubmit={handleSubmit} className="mt-5 flex flex-col gap-4">
-          <div className="flex flex-col gap-2">
-            <label htmlFor="name" className={labelClass}>
-              Debt Name
-            </label>
-            <input
-              id="name"
-              value={name}
-              onChange={(e) => setName(e.target.value)}
-              placeholder="e.g. Chase Visa"
-              className={inputClass}
-            />
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div className="flex flex-col gap-2">
-              <label htmlFor="type" className={labelClass}>
-                Type
-              </label>
-              <select
-                id="type"
-                value={debtType}
-                onChange={(e) => setDebtType(e.target.value)}
-                className={inputClass}
-              >
-                <option value="" disabled>
-                  Select type
-                </option>
-                {DEBT_TYPES.map((t) => (
-                  <option key={t} value={t}>
-                    {t}
-                  </option>
-                ))}
-              </select>
-            </div>
-
-            <div className="flex flex-col gap-2">
-              <label htmlFor="owner" className={labelClass}>
-                Owner
-              </label>
-              <select
-                id="owner"
-                value={profileId}
-                onChange={(e) => setProfileId(e.target.value)}
-                className={inputClass}
-              >
-                {profiles.map((p) => (
-                  <option key={p.id} value={p.id}>
-                    {p.name}
-                  </option>
-                ))}
-                {profiles.length > 1 && <option value="">Joint</option>}
-              </select>
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div className="flex flex-col gap-2">
-              <label htmlFor="original" className={labelClass}>
-                Original Balance ($)
-              </label>
-              <input
-                id="original"
-                type="number"
-                step="0.01"
-                min="0"
-                value={originalBalance}
-                onChange={(e) => setOriginalBalance(e.target.value)}
-                className={inputClass}
-              />
-            </div>
-            <div className="flex flex-col gap-2">
-              <label htmlFor="current" className={labelClass}>
-                Current Balance ($)
-              </label>
-              <input
-                id="current"
-                type="number"
-                step="0.01"
-                min="0"
-                value={currentBalance}
-                onChange={(e) => setCurrentBalance(e.target.value)}
-                className={inputClass}
-              />
-            </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
-            <div className="flex flex-col gap-2">
-              <label htmlFor="rate" className={labelClass}>
-                Interest Rate (%)
-              </label>
-              <input
-                id="rate"
-                type="number"
-                step="0.001"
-                min="0"
-                value={interestRate}
-                onChange={(e) => setInterestRate(e.target.value)}
-                className={inputClass}
-              />
-            </div>
-            <div className="flex flex-col gap-2">
-              <label htmlFor="min-payment" className={labelClass}>
-                Minimum Payment ($)
-              </label>
-              <input
-                id="min-payment"
-                type="number"
-                step="0.01"
-                min="0"
-                value={minimumPayment}
-                onChange={(e) => setMinimumPayment(e.target.value)}
-                className={inputClass}
-              />
-            </div>
-          </div>
-
-          <div className="flex flex-col gap-2">
-            <label htmlFor="due-day" className={labelClass}>
-              Due Date (Day of Month)
-            </label>
-            <input
-              id="due-day"
-              type="number"
-              min="1"
-              max="31"
-              value={dueDay}
-              onChange={(e) => setDueDay(e.target.value)}
-              className={inputClass}
-            />
-          </div>
-
-          <div className="flex flex-col gap-2">
-            <label htmlFor="notes" className={labelClass}>
-              Notes
-            </label>
-            <textarea
-              id="notes"
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              rows={2}
-              placeholder="Any additional notes..."
-              className={inputClass}
-            />
-          </div>
-
-          {error && <p className="text-sm text-negative">{error}</p>}
-
-          <div className="mt-2 flex gap-3">
-            <button
-              type="button"
-              onClick={onClose}
-              className="flex-1 rounded-3xl px-5 py-3 text-sm font-semibold text-body hover:bg-ink/5 dark:text-zinc-400 dark:hover:bg-white/10"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={loading}
-              className="flex-1 rounded-3xl bg-brand px-5 py-3 text-sm font-semibold text-ink transition-transform hover:bg-brand-hover active:scale-[0.98] disabled:opacity-60"
-            >
-              {loading ? "Saving..." : isEdit ? "Save Changes" : "Add Debt"}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+      </form>
+    </Modal>
   );
 }

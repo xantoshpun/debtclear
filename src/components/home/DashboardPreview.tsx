@@ -55,7 +55,7 @@ export function DashboardPreview() {
           <p className="text-sm font-semibold text-ink dark:text-zinc-50">
             Debt-free in
           </p>
-          <p className="text-sm font-semibold text-positive dark:text-emerald-400">
+          <p className="text-sm font-semibold text-positive-deep dark:text-emerald-400">
             2y 11m
           </p>
         </div>

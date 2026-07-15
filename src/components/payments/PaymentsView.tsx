@@ -1,11 +1,13 @@
 "use client";
 
 import { useState } from "react";
-import { Plus, Receipt, Trash } from "@phosphor-icons/react/dist/ssr";
+import { Plus, Receipt, Trash, CheckCircle } from "@phosphor-icons/react/dist/ssr";
 import { createClient } from "@/lib/supabase/client";
 import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { PaymentFormModal } from "./PaymentFormModal";
 import type { Debt, Payment } from "./types";
+import { formatMoney } from "@/lib/currency";
+import { useSettings } from "@/components/settings/SettingsContext";
 
 export function PaymentsView({
   initialDebts,
@@ -15,6 +17,7 @@ export function PaymentsView({
   initialPayments: Payment[];
 }) {
   const supabase = createClient();
+  const { currency } = useSettings();
   const [debts, setDebts] = useState(initialDebts);
   const [payments, setPayments] = useState(
     [...initialPayments].sort((a, b) => b.payment_date.localeCompare(a.payment_date)),
@@ -74,7 +77,7 @@ export function PaymentsView({
             Payment History
           </h1>
           <p className="mt-1 text-body dark:text-zinc-400">
-            {payments.length} payments · ${totalPaid.toLocaleString()} total paid
+            {payments.length} payments · {formatMoney(totalPaid, currency)} total paid
           </p>
         </div>
         <button
@@ -92,7 +95,7 @@ export function PaymentsView({
         <div className="mt-8 flex flex-col items-center justify-center rounded-3xl bg-canvas py-16 text-center dark:bg-zinc-900">
           <Receipt size={32} className="text-mute dark:text-zinc-600" />
           <p className="mt-3 font-semibold text-ink dark:text-zinc-50">
-            No payments logged yet.
+            No payments logged yet
           </p>
           <button
             type="button"
@@ -110,28 +113,33 @@ export function PaymentsView({
               key={p.id}
               className="flex items-center justify-between gap-4 rounded-2xl bg-canvas p-4 dark:bg-zinc-900"
             >
-              <div>
-                <p className="font-semibold text-ink dark:text-zinc-50">
-                  {p.debts?.name ?? "Deleted debt"}
-                </p>
-                <p className="text-sm text-mute dark:text-zinc-500">
-                  {new Date(p.payment_date + "T00:00:00").toLocaleDateString(undefined, {
-                    month: "short",
-                    day: "numeric",
-                    year: "numeric",
-                  })}
-                  {p.notes ? ` · ${p.notes}` : ""}
-                </p>
+              <div className="flex items-center gap-3">
+                <div className="grid size-10 shrink-0 place-items-center rounded-full bg-positive-deep/10 dark:bg-zinc-800">
+                  <CheckCircle size={18} weight="bold" className="text-positive-deep dark:text-emerald-400" />
+                </div>
+                <div>
+                  <p className="font-semibold text-ink dark:text-zinc-50">
+                    {p.debts?.name ?? "Deleted debt"}
+                  </p>
+                  <p className="text-sm text-mute dark:text-zinc-400">
+                    {new Date(p.payment_date + "T00:00:00").toLocaleDateString(undefined, {
+                      month: "short",
+                      day: "numeric",
+                      year: "numeric",
+                    })}
+                    {p.notes ? ` · ${p.notes}` : ""}
+                  </p>
+                </div>
               </div>
               <div className="flex items-center gap-3">
                 <p className="font-bold text-ink dark:text-zinc-50">
-                  ${p.amount.toLocaleString()}
+                  {formatMoney(p.amount, currency)}
                 </p>
                 <button
                   type="button"
                   onClick={() => setPendingDelete(p)}
                   aria-label="Delete"
-                  className="grid size-8 place-items-center rounded-full text-mute hover:bg-negative/10 hover:text-negative dark:text-zinc-500"
+                  className="grid size-11 place-items-center rounded-full text-mute hover:bg-negative/10 hover:text-negative dark:text-zinc-400"
                 >
                   <Trash size={16} />
                 </button>

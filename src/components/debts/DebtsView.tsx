@@ -7,6 +7,8 @@ import { ConfirmDialog } from "@/components/ConfirmDialog";
 import { DebtCard } from "./DebtCard";
 import { DebtFormModal } from "./DebtFormModal";
 import type { Debt, Profile } from "./types";
+import { formatMoney } from "@/lib/currency";
+import { useSettings } from "@/components/settings/SettingsContext";
 
 export function DebtsView({
   profiles,
@@ -16,6 +18,7 @@ export function DebtsView({
   initialDebts: Debt[];
 }) {
   const supabase = createClient();
+  const { currency } = useSettings();
   const [debts, setDebts] = useState(initialDebts);
   const [modalOpen, setModalOpen] = useState(false);
   const [editingDebt, setEditingDebt] = useState<Debt | undefined>(undefined);
@@ -116,8 +119,8 @@ export function DebtsView({
                   <h2 className="text-lg font-bold text-ink dark:text-zinc-50">
                     {group.label}
                   </h2>
-                  <span className="text-sm text-mute dark:text-zinc-500">
-                    ${total.toLocaleString()} total
+                  <span className="text-sm text-mute dark:text-zinc-400">
+                    {formatMoney(total, currency)} total
                   </span>
                 </div>
                 <div className="mt-4 grid grid-cols-1 gap-4 md:grid-cols-2 lg:grid-cols-3">

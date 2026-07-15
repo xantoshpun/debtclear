@@ -3,6 +3,9 @@
 import { useState } from "react";
 import { X } from "@phosphor-icons/react/dist/ssr";
 import { createClient } from "@/lib/supabase/client";
+import { Modal } from "@/components/Modal";
+import { formatMoney } from "@/lib/currency";
+import { useSettings } from "@/components/settings/SettingsContext";
 import type { Debt, Payment } from "./types";
 
 const inputClass =
@@ -23,6 +26,7 @@ export function PaymentFormModal({
   onSaved: (payment: Payment, updatedDebt: Debt) => void;
 }) {
   const supabase = createClient();
+  const { currency } = useSettings();
 
   const [debtId, setDebtId] = useState(debts[0]?.id ?? "");
   const [amount, setAmount] = useState("");
@@ -85,105 +89,103 @@ export function PaymentFormModal({
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-ink/40 px-4 py-8 dark:bg-black/60">
-      <div className="max-h-full w-full max-w-lg overflow-y-auto rounded-3xl bg-canvas p-6 dark:bg-zinc-900">
-        <div className="flex items-center justify-between">
-          <h2 className="text-xl font-black tracking-tight text-ink dark:text-zinc-50">
-            Log Payment
-          </h2>
+    <Modal onClose={onClose}>
+      <div className="flex items-center justify-between">
+        <h2 className="text-xl font-black tracking-tight text-ink dark:text-zinc-50">
+          Log Payment
+        </h2>
+        <button
+          type="button"
+          onClick={onClose}
+          aria-label="Close"
+          className="grid size-11 place-items-center rounded-full text-mute hover:bg-ink/5 dark:text-zinc-400 dark:hover:bg-white/10"
+        >
+          <X size={18} />
+        </button>
+      </div>
+
+      <form onSubmit={handleSubmit} className="mt-5 flex flex-col gap-4">
+        <div className="flex flex-col gap-2">
+          <label htmlFor="debt" className={labelClass}>
+            Debt
+          </label>
+          <select
+            id="debt"
+            value={debtId}
+            onChange={(e) => setDebtId(e.target.value)}
+            className={inputClass}
+          >
+            <option value="" disabled>
+              Select debt...
+            </option>
+            {debts.map((d) => (
+              <option key={d.id} value={d.id}>
+                {d.name} ({formatMoney(d.current_balance, currency)})
+              </option>
+            ))}
+          </select>
+        </div>
+
+        <div className="flex flex-col gap-2">
+          <label htmlFor="amount" className={labelClass}>
+            Amount ({currency})
+          </label>
+          <input
+            id="amount"
+            type="number"
+            step="0.01"
+            min="0"
+            value={amount}
+            onChange={(e) => setAmount(e.target.value)}
+            className={inputClass}
+          />
+        </div>
+
+        <div className="flex flex-col gap-2">
+          <label htmlFor="date" className={labelClass}>
+            Payment Date
+          </label>
+          <input
+            id="date"
+            type="date"
+            value={paymentDate}
+            onChange={(e) => setPaymentDate(e.target.value)}
+            className={inputClass}
+          />
+        </div>
+
+        <div className="flex flex-col gap-2">
+          <label htmlFor="notes" className={labelClass}>
+            Notes
+          </label>
+          <textarea
+            id="notes"
+            value={notes}
+            onChange={(e) => setNotes(e.target.value)}
+            rows={2}
+            className={inputClass}
+          />
+        </div>
+
+        {error && <p className="text-sm text-negative">{error}</p>}
+
+        <div className="mt-2 flex gap-3">
           <button
             type="button"
             onClick={onClose}
-            aria-label="Close"
-            className="grid size-9 place-items-center rounded-full text-mute hover:bg-ink/5 dark:text-zinc-500 dark:hover:bg-white/10"
+            className="flex-1 rounded-3xl px-5 py-3 text-sm font-semibold text-body hover:bg-ink/5 dark:text-zinc-400 dark:hover:bg-white/10"
           >
-            <X size={18} />
+            Cancel
+          </button>
+          <button
+            type="submit"
+            disabled={loading || debts.length === 0}
+            className="flex-1 rounded-3xl bg-brand px-5 py-3 text-sm font-semibold text-ink transition-transform hover:bg-brand-hover active:scale-[0.98] disabled:opacity-60"
+          >
+            {loading ? "Saving..." : "Log Payment"}
           </button>
         </div>
-
-        <form onSubmit={handleSubmit} className="mt-5 flex flex-col gap-4">
-          <div className="flex flex-col gap-2">
-            <label htmlFor="debt" className={labelClass}>
-              Debt
-            </label>
-            <select
-              id="debt"
-              value={debtId}
-              onChange={(e) => setDebtId(e.target.value)}
-              className={inputClass}
-            >
-              <option value="" disabled>
-                Select debt...
-              </option>
-              {debts.map((d) => (
-                <option key={d.id} value={d.id}>
-                  {d.name} (${d.current_balance.toLocaleString()})
-                </option>
-              ))}
-            </select>
-          </div>
-
-          <div className="flex flex-col gap-2">
-            <label htmlFor="amount" className={labelClass}>
-              Amount ($)
-            </label>
-            <input
-              id="amount"
-              type="number"
-              step="0.01"
-              min="0"
-              value={amount}
-              onChange={(e) => setAmount(e.target.value)}
-              className={inputClass}
-            />
-          </div>
-
-          <div className="flex flex-col gap-2">
-            <label htmlFor="date" className={labelClass}>
-              Payment Date
-            </label>
-            <input
-              id="date"
-              type="date"
-              value={paymentDate}
-              onChange={(e) => setPaymentDate(e.target.value)}
-              className={inputClass}
-            />
-          </div>
-
-          <div className="flex flex-col gap-2">
-            <label htmlFor="notes" className={labelClass}>
-              Notes
-            </label>
-            <textarea
-              id="notes"
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              rows={2}
-              className={inputClass}
-            />
-          </div>
-
-          {error && <p className="text-sm text-negative">{error}</p>}
-
-          <div className="mt-2 flex gap-3">
-            <button
-              type="button"
-              onClick={onClose}
-              className="flex-1 rounded-3xl px-5 py-3 text-sm font-semibold text-body hover:bg-ink/5 dark:text-zinc-400 dark:hover:bg-white/10"
-            >
-              Cancel
-            </button>
-            <button
-              type="submit"
-              disabled={loading || debts.length === 0}
-              className="flex-1 rounded-3xl bg-brand px-5 py-3 text-sm font-semibold text-ink transition-transform hover:bg-brand-hover active:scale-[0.98] disabled:opacity-60"
-            >
-              {loading ? "Saving..." : "Log Payment"}
-            </button>
-          </div>
-        </form>
-      </div>
-    </div>
+      </form>
+    </Modal>
   );
 }
